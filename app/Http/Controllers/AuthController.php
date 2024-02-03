@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use \App\Models\User;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
        
-        $user = \App\Models\User::create([
+        $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => bcrypt($validatedData['password']),
@@ -26,23 +27,29 @@ class AuthController extends Controller
         return response()->json(['token' => $token], 201);
     }
 
+
+
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-
+    
         if (!Auth::attempt($credentials)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
-
+    
         $user = $request->user();
         $token = $user->createToken('MyAppToken')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
+    
+        return response()->json([
+            'token' => $token,
+            'username' => $user->name,
+        ], 200);
     }
-
+    
 
     
 }
